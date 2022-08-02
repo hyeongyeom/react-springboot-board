@@ -1,0 +1,8 @@
+.title-container {
+    display: flex;
+    padding:20px 0px;
+    width: 900px;
+    font-Size:25px;
+    font-weight: 400;
+
+}

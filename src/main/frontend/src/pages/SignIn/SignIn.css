@@ -1,0 +1,10 @@
+.auth-btn.disabled {
+    background: gray;
+}
+
+.login-footer {
+    position: relative;
+    display:flex;
+    left:120px;
+
+}

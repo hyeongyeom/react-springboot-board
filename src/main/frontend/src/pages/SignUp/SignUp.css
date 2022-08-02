@@ -1,0 +1,28 @@
+div.nicknameDuple {
+    display:flex;
+}
+.btn-duplechk {
+    text-align: center;
+    font-size:small;
+    height: 30px;
+    margin-top:3px;
+    margin-right: 3px;
+
+}
+.auth-btn {
+    cursor: pointer;
+}
+
+/* 회원가입 밑에 서비스 이용 약관,개인정보처리방침(terms of service) */
+.tos {
+    font-size: 10px;
+    text-align: center;
+}
+
+.nicknameDupleTrue {
+    color:red;
+}
+.nicknameDupleFalse{
+
+    color:green;
+}

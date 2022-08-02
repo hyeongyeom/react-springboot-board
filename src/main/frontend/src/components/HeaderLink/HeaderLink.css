@@ -1,0 +1,9 @@
+div.Head_link {
+    display: flex;
+    align-self: flex-end;
+}
+
+.logout {
+    text-decoration: underline;
+    cursor: pointer;
+}
