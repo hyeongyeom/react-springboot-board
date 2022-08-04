@@ -1,5 +1,7 @@
 package board.boardspring.domain.entitiy;
 
+import com.sun.istack.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -7,34 +9,29 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.PrePersist;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
-@Table(name="user")
+@Table(name="user",uniqueConstraints={
+        @UniqueConstraint(columnNames = "email")
+})
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto created ID
     private Long id;
-    @Column(length = 30,nullable = false) // varchar(100) not null
+    @NotNull
+    @Column(length = 30,nullable = false)
     private String email;
+    @NotNull
     @Column(length = 20,nullable = false)
-    private int password;
+    private String password;
+    @NotNull
     @Column(length = 10,nullable = false)
     private String nickname;
-    public User(Long id, String email, int password, String nickname) {
-        this.id = id;
-        this.email = email;
-        this.password = password;
-        this.nickname = nickname;
-    }
+
 
 }
