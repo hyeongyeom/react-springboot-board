@@ -28,7 +28,7 @@ public class UserServiceTest {
         } catch (Exception e) {
             fail();
         }
-        Optional<User> user1 = userService.findUserById(1L);
+        User user1 = userService.findUserById(1L);
         if(user1.isPresent()) {
             String email= user1.get().getEmail();
         assertThat(email).isEqualTo(user.getEmail());

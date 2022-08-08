@@ -1,8 +1,10 @@
 package board.boardspring.controller;
 
 
+import board.boardspring.domain.entitiy.Role;
 import board.boardspring.domain.entitiy.User;
 import board.boardspring.service.UserService;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.javassist.bytecode.DuplicateMemberException;
@@ -13,37 +15,43 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class UserRestController {
 
-    private UserService userService;
-
+    private final UserService userService;
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getUsers() {
+        return ResponseEntity.ok().body(userService.getUsers());
+    }
     @PostMapping("/user/register")
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        try {
-            userService.createUser(user);
-        }catch (Exception e) {
-            return new ResponseEntity<User>(HttpStatus.CONFLICT);
-        }
-        return new ResponseEntity<User>(HttpStatus.CREATED);
+        URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/auth/user/register").toUriString());
+        return ResponseEntity.created(uri).body(userService.createUser(user));
 
     }
-//    @PostMapping("/user/login")
-//    public ResponseEntity<Void> login(@RequestBody User user) {
-//
-//    }
-//
     @GetMapping("/user/{id}")
-    public ResponseEntity<User> userList(@PathVariable Long id) {
-        Optional<User> user=userService.findUserById(id);
-        if(user.isPresent()) {
-            return new ResponseEntity<User>(HttpStatus.OK);
-        }else {
-            return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Optional<User>> userList(@PathVariable Long id) {
+        return ResponseEntity.ok().body(userService.findUserById(id));
+    }
+    @PostMapping("/role/save")
+    public ResponseEntity<Role> createRole(@RequestBody Role role) {
+        URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/auth/role/register").toUriString());
+        return ResponseEntity.created(uri).body(userService.saveRole(role));
+    }
+    @PostMapping("/role/addtouser")
+    public ResponseEntity<?> addRoleToUser(@RequestBody RoleToUserForm form) {
+        userService.addRoleToUser(form.getEmail(),form.getRoleName());
+        return ResponseEntity.ok().build();
+    }
+
+    @Data
+    class RoleToUserForm {
+        private String email;
+        private String roleName;
     }
 }

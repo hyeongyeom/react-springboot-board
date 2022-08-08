@@ -21,4 +21,7 @@ logging:
           descriptor:
             sql:
               BasicBinder: TRACE
+security:
+  basic:
+    enabled:true
 

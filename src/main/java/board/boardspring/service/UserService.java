@@ -1,18 +1,23 @@
 package board.boardspring.service;
 
+import board.boardspring.domain.entitiy.Role;
 import board.boardspring.domain.entitiy.User;
-import org.apache.ibatis.javassist.bytecode.DuplicateMemberException;
 
-import javax.swing.text.html.Option;
+
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
+    List<User> getUsers();
+    User createUser(User user);
 
-    boolean createUser(User user) throws Exception;
+    Role saveRole(Role role);
+
+    void addRoleToUser(String email,String roleName);
 
     Optional<User> findUserById(Long id);
 
-    Optional<User> findUserByEmail(String email);
+    User findUserByEmail(String email);
 
     User updateUser(Long id, User user);
 
