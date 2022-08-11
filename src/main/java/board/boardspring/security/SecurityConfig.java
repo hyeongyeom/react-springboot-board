@@ -1,9 +1,12 @@
 package board.boardspring.security;
 
+import board.boardspring.domain.repository.UserRepository;
 import board.boardspring.filter.CustomAuthenticationFilter;
+import board.boardspring.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +22,7 @@ import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.authentication.AuthenticationManagerFactoryBean;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +35,7 @@ import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.sql.DataSource;
 
@@ -38,27 +43,35 @@ import javax.sql.DataSource;
 @Configuration @EnableWebSecurity @AllArgsConstructor
 public class SecurityConfig  {
 
-    AuthenticationManager authenticationManager;
 
-    @Autowired
-    UserDetailsService userDetailsService;
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-    PasswordEncoder encoder;
+    private final UserDetailsService userDetailsService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+//    @Bean
+//    public UserDetailsService userDetailsService(BCryptPasswordEncoder bCryptPasswordEncoder) {
+//        JdbcUserDetailsManager manager = new JdbcUserDetailsManager();
+//        manager.createUser(User.withUsername("user")
+//                .password(bCryptPasswordEncoder.encode("userPass"))
+//                .roles("USER")
+//                .build());
+//        manager.createUser(User.withUsername("admin")
+//                .password(bCryptPasswordEncoder.encode("adminPass"))
+//                .roles("USER", "ADMIN")
+//                .build());
+//        return manager;
+//    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder=http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.userDetailsService(userDetailsService);
-        authenticationManager=authenticationManagerBuilder.build();
+        authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
+        AuthenticationManager authenticationManager=authenticationManagerBuilder.build();
 
         http.authorizeHttpRequests()
                 .antMatchers("/login").permitAll()
                 .antMatchers("/admin").hasRole("USER_ADMIN")
                 .anyRequest().authenticated()
                 .and()
-                    .addFilter(new CustomAuthenticationFilter(authenticationManager(new AuthenticationConfiguration())))
+//                    .addFilter(new CustomAuthenticationFilter(authenticationManager))
                     .authenticationManager(authenticationManager)
                     .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -69,11 +82,17 @@ public class SecurityConfig  {
                     .permitAll()
                 .and()
                     .logout()
-                    .permitAll();
+                    .permitAll()
+                .and()
+                .addFilterBefore(new CustomAuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+
+
 
         return http.build();
 
     }
+
+
 //    @Bean
 //    public DataSource dataSource() {
 //        return new EmbeddedDatabaseBuilder()
@@ -83,23 +102,23 @@ public class SecurityConfig  {
 //                .build();
 //        return dataSource;
 //    }
-    private final DataSource dataSource;
-    public SecurityConfig(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-
-
-    @Bean
-    public UserDetailsManager users(DataSource dataSource) {
-        UserDetails user = User.withUsername("user")
-                .password(encoder.encode("password"))
-                .roles("USER")
-                .build();
-        JdbcUserDetailsManager users = new JdbcUserDetailsManager(dataSource);
-        users.createUser(user);
-        return users;
-    }
+//    private final DataSource dataSource;
+//    public SecurityConfig(DataSource dataSource) {
+//        this.dataSource = dataSource;
+//    }
+//
+//
+//
+//    @Bean
+//    public UserDetailsManager users(DataSource dataSource) {
+//        UserDetails user = User.withUsername("user")
+//                .password(encoder.encode("password"))
+//                .roles("USER")
+//                .build();
+//        JdbcUserDetailsManager users = new JdbcUserDetailsManager(dataSource);
+//        users.createUser(user);
+//        return users;
+//    }
 
 
     @Bean
