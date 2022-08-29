@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.SecurityBuilder;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -47,19 +48,6 @@ public class SecurityConfig  {
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-//    @Bean
-//    public UserDetailsService userDetailsService(BCryptPasswordEncoder bCryptPasswordEncoder) {
-//        JdbcUserDetailsManager manager = new JdbcUserDetailsManager();
-//        manager.createUser(User.withUsername("user")
-//                .password(bCryptPasswordEncoder.encode("userPass"))
-//                .roles("USER")
-//                .build());
-//        manager.createUser(User.withUsername("admin")
-//                .password(bCryptPasswordEncoder.encode("adminPass"))
-//                .roles("USER", "ADMIN")
-//                .build());
-//        return manager;
-//    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder=http.getSharedObject(AuthenticationManagerBuilder.class);
@@ -68,57 +56,39 @@ public class SecurityConfig  {
 
         http.authorizeHttpRequests()
                 .antMatchers("/login").permitAll()
-                .antMatchers("/admin").hasRole("USER_ADMIN")
                 .anyRequest().authenticated()
                 .and()
-//                    .addFilter(new CustomAuthenticationFilter(authenticationManager))
+                    .addFilter(new CustomAuthenticationFilter(authenticationManager))
                     .authenticationManager(authenticationManager)
                     .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                     .formLogin()
-                    .loginPage("/login")
+                    .loginPage("/login.html")
                     .usernameParameter("email")
                     .permitAll()
                 .and()
                     .logout()
                     .permitAll()
                 .and()
-                .addFilterBefore(new CustomAuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+                    .authenticationProvider(authenticationProvider());
+
+//                .addFilterBefore(new CustomAuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
 
 
 
         return http.build();
 
     }
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(bCryptPasswordEncoder);
 
-//    @Bean
-//    public DataSource dataSource() {
-//        return new EmbeddedDatabaseBuilder()
-//                .setType(EmbeddedDatabaseType.H2)
-//                .username("email")
-//                .password("password")
-//                .build();
-//        return dataSource;
-//    }
-//    private final DataSource dataSource;
-//    public SecurityConfig(DataSource dataSource) {
-//        this.dataSource = dataSource;
-//    }
-//
-//
-//
-//    @Bean
-//    public UserDetailsManager users(DataSource dataSource) {
-//        UserDetails user = User.withUsername("user")
-//                .password(encoder.encode("password"))
-//                .roles("USER")
-//                .build();
-//        JdbcUserDetailsManager users = new JdbcUserDetailsManager(dataSource);
-//        users.createUser(user);
-//        return users;
-//    }
+        return authProvider;
+    }
 
 
     @Bean

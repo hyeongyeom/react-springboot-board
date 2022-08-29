@@ -1,10 +1,14 @@
 package board.boardspring.user;
 
 import board.boardspring.domain.entitiy.User;
+import board.boardspring.domain.repository.UserRepository;
 import board.boardspring.service.UserService;
 import org.apache.ibatis.javassist.bytecode.DuplicateMemberException;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,39 +17,41 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 public class UserServiceTest {
 
-    @Autowired
+    @InjectMocks
     private UserService userService;
 
+    @Mock
+    private UserRepository userRepository;
+
+    @DisplayName("mock 객체 생성 확인")
     @Test
-    public void createUser() {
-        User user = new User(1L,"wltnwkd241@naver.com",123123,"choi" );
-        try {
-            userService.createUser(user);
-        } catch (Exception e) {
-            fail();
-        }
-        User user1 = userService.findUserById(1L);
-        if(user1.isPresent()) {
-            String email= user1.get().getEmail();
-        assertThat(email).isEqualTo(user.getEmail());
-        }
+    void mockNotNullTest(){
+        assertThat(userService).isNotNull();
+    }
+
+    @DisplayName("게시판 등록")
+    @Test
+    void createUser() {
+        User user=User.builder().email("wltnwkd244@naver.com").nickname("gyeom").password("abc123123").build();
+
+
+        given(userRepository.save(any(User.class)))
+                .willReturn(user);
+
+        User savedUser=userService.createUser(user);
+
+        assertThat(savedUser.getId()).isNotNull();
+        verify(userRepository,times(1)).save((any(User.class)));
+
     }
 
 
-    @Test
-    public void duplicatedUser() {
-        User user1 = new User(1L,"wltnwkd242@naver.com",123123,"choi" );
-        User user2 = new User(2L,"wltnwkd242@naver.com",1231234,"choi1" );
-
-        assertThrows(DuplicateMemberException.class,() -> {
-            userService.createUser(user1);
-            userService.createUser(user2);
-        });
-
-
-    }
 }
